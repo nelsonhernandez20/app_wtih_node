@@ -21,8 +21,25 @@ function App(): React.JSX.Element {
   useEffect(() => {
     nodejs.start('main.js');
     nodejs.channel.addListener('message', msg => {
-      console.log('From node: ' + msg);
+      const messageObj = JSON.parse(msg);
+      if (messageObj.type === 'data') {
+        // Procesa el chunk de datos recibido
+        console.log('Chunk received:', messageObj.chunk);
+      } else if (messageObj.type === 'end') {
+        // Maneja el fin de la transmisión de datos
+        console.log('No more data in response.');
+      } else if (messageObj.type === 'error') {
+        // Maneja un error en la solicitud
+        console.error('Error:', messageObj.message);
+      } else if (messageObj.type === 'unknown') {
+        // Maneja mensajes desconocidos
+        console.log('Unknown message:', messageObj.message);
+      }
     });
+    setTimeout(() => {
+      // Envía un mensaje o datos a Node.js
+      nodejs.channel.send('startRequest');
+    }, 1000); // Ajusta este tiempo según sea necesario
   }, []); // El array vacío indica que este efecto solo se ejecuta una vez, al montar el componente
 
   const backgroundStyle = {
